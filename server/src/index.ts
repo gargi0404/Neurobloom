@@ -1,13 +1,12 @@
 // Make sure to run: yarn install (or npm install) in the server directory
+import dotenv from 'dotenv';
+dotenv.config();
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import userRoutes from './routes/user';
 import scoreRoutes from './routes/score';
 import therapistRoutes from './routes/therapist';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

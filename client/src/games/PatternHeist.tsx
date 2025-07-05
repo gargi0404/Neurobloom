@@ -3,20 +3,33 @@ import { Box, Button, Typography, Grid, Paper } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { getAuth } from 'firebase/auth';
 import axios from 'axios';
+import patternImg from '../pattern.jpeg';
 
 const COLORS = ['red', 'blue', 'green', 'yellow'];
-const DIFFICULTY = 5;
+const NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const MAX_LEVEL = 10;
 
-function getRandomSequence(length: number) {
-  return Array.from({ length }, () => COLORS[Math.floor(Math.random() * COLORS.length)]);
+function getRandomSequence(length: number, useNumbers: boolean = false) {
+  const items = useNumbers ? NUMBERS : COLORS;
+  return Array.from({ length }, () => items[Math.floor(Math.random() * items.length)]);
 }
 
-function playSound(color: string) {
+function playSound(item: string, useNumbers: boolean = false) {
   const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
   const o = ctx.createOscillator();
   o.type = 'sine';
-  o.frequency.value =
-    color === 'red' ? 440 : color === 'blue' ? 660 : color === 'green' ? 550 : 770;
+  
+  if (useNumbers) {
+    // Different frequencies for numbers
+    const frequencies = [220, 247, 277, 294, 330, 370, 415, 440, 494];
+    const numIndex = parseInt(item) - 1;
+    o.frequency.value = frequencies[numIndex] || 440;
+  } else {
+    // Different frequencies for colors
+    o.frequency.value =
+      item === 'red' ? 440 : item === 'blue' ? 660 : item === 'green' ? 550 : 770;
+  }
+  
   o.connect(ctx.destination);
   o.start();
   o.stop(ctx.currentTime + 0.18);
@@ -24,7 +37,8 @@ function playSound(color: string) {
 
 const PatternHeist: React.FC = () => {
   const { user } = useAuth();
-  const [sequence, setSequence] = useState<string[]>(getRandomSequence(DIFFICULTY));
+  const [level, setLevel] = useState(1);
+  const [sequence, setSequence] = useState<string[]>([]);
   const [showing, setShowing] = useState(true);
   const [showIndex, setShowIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>([]);
@@ -33,63 +47,82 @@ const PatternHeist: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
-  const [activeColor, setActiveColor] = useState<string | null>(null);
-  const [round, setRound] = useState(1);
+  const [activeItem, setActiveItem] = useState<string | null>(null);
+  const [useNumbers, setUseNumbers] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const showTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [modeChanged, setModeChanged] = useState(false);
+
+  // Generate new sequence for current level
+  useEffect(() => {
+    const newSequence = getRandomSequence(level, useNumbers);
+    setSequence(newSequence);
+    setUserInput([]);
+    setShowing(true);
+    setFeedback(null);
+    setActiveItem(null);
+    setWaiting(false);
+    setModeChanged(true);
+    setTimeout(() => setModeChanged(false), 1200);
+  }, [level, useNumbers]);
 
   // Show sequence one by one
   useEffect(() => {
-    if (!showing) return;
+    if (!showing || sequence.length === 0) return;
     setShowIndex(0);
     setWaiting(true);
     let i = 0;
     function showNext() {
-      if (i >= round) {
+      if (i >= sequence.length) {
         setShowing(false);
         setWaiting(false);
-        setActiveColor(null);
+        setActiveItem(null);
         return;
       }
-      setActiveColor(sequence[i]);
-      playSound(sequence[i]);
+      setActiveItem(sequence[i]);
+      playSound(sequence[i], useNumbers);
       showTimeout.current = setTimeout(() => {
-        setActiveColor(null);
+        setActiveItem(null);
         showTimeout.current = setTimeout(() => {
           i++;
           showNext();
-        }, 200);
-      }, 500);
+        }, 300);
+      }, 600);
     }
     showNext();
     return () => {
       if (showTimeout.current) clearTimeout(showTimeout.current);
     };
-    // eslint-disable-next-line
-  }, [showing, round, sequence]);
+  }, [showing, sequence, useNumbers]);
 
   // Handle user click
-  const handleTileClick = (color: string) => {
+  const handleTileClick = (item: string) => {
     if (showing || waiting || gameOver) return;
-    playSound(color);
+    playSound(item, useNumbers);
     const idx = userInput.length;
-    if (sequence[idx] === color) {
-      setUserInput([...userInput, color]);
+    if (sequence[idx] === item) {
+      setUserInput([...userInput, item]);
       setFeedback('correct');
-      if (idx + 1 === round) {
-        setScore(s => s + 1);
-        if (round === DIFFICULTY) setGameOver(true);
-        else {
+      setActiveItem(item);
+      setTimeout(() => setActiveItem(null), 200);
+      if (idx + 1 === sequence.length) {
+        setScore(s => s + level); // Higher levels give more points
+        if (level === MAX_LEVEL) {
+          setGameOver(true);
+        } else {
           setTimeout(() => {
-            setRound(r => r + 1);
-            setUserInput([]);
-            setShowing(true);
-            setFeedback(null);
-          }, 700);
+            // Toggle useNumbers every 3 levels (on 3, 6, 9)
+            if ((level + 1) % 3 === 1) {
+              setUseNumbers(prev => !prev);
+            }
+            setLevel(l => l + 1);
+          }, 1000);
         }
       }
     } else {
       setFeedback('wrong');
+      setActiveItem(item);
+      setTimeout(() => setActiveItem(null), 400);
       setGameOver(true);
     }
   };
@@ -101,7 +134,7 @@ const PatternHeist: React.FC = () => {
       const token = await getAuth().currentUser?.getIdToken();
       await axios.post(
         `${import.meta.env.VITE_API_URL}/score`,
-        { game: 'pattern_heist', score, difficulty: DIFFICULTY },
+        { game: 'pattern_heist', score, difficulty: level },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSubmitted(true);
@@ -110,25 +143,33 @@ const PatternHeist: React.FC = () => {
   };
 
   const handleRestart = () => {
-    setSequence(getRandomSequence(DIFFICULTY));
-    setUserInput([]);
+    setLevel(1);
     setScore(0);
     setGameOver(false);
     setSubmitted(false);
     setFeedback(null);
-    setActiveColor(null);
-    setRound(1);
-    setShowing(true);
-    setWaiting(false);
+    setActiveItem(null);
+    setUseNumbers(false);
+    setUserInput([]);
   };
+
+  const items = useNumbers ? NUMBERS : COLORS;
 
   return (
     <Box p={2}>
+      <Box display="flex" justifyContent="center" mb={2}>
+        <img src={patternImg} alt="Pattern" style={{ maxWidth: 120, borderRadius: 8 }} />
+      </Box>
       <Typography variant="h5" mb={2}>Pattern Heist</Typography>
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        Helps with: Schizophrenia | Trains: Logic, Sequencing, Working Memory
+      </Typography>
+      
       {gameOver ? (
         <Box>
           <Typography variant="h6">Game Over!</Typography>
-          <Typography>Your Score: {score} / {DIFFICULTY}</Typography>
+          <Typography>Final Score: {score}</Typography>
+          <Typography>Level Reached: {level}</Typography>
           {!submitted ? (
             <Button variant="contained" onClick={handleSubmitScore} disabled={submitting} sx={{ mt: 1 }}>
               {submitting ? 'Submitting...' : 'Submit Score'}
@@ -142,28 +183,62 @@ const PatternHeist: React.FC = () => {
         </Box>
       ) : (
         <Box>
-          <Typography mb={1}>Memorize the sequence, then repeat it by clicking the tiles in order!</Typography>
+          <Typography mb={1}>
+            Memorize the {useNumbers ? 'number' : 'color'} sequence, then repeat it by clicking in order!
+          </Typography>
           <Box mb={2}>
-            <Typography>Round: {round} / {DIFFICULTY}</Typography>
+            <Typography>Level: {level} / {MAX_LEVEL}</Typography>
+            <Typography>Sequence Length: {sequence.length}</Typography>
+            <Typography>Current Mode: {useNumbers ? 'Numbers' : 'Colors'}</Typography>
           </Box>
+          {modeChanged && (
+            <Typography align="center" color="primary" mb={1}>
+              Mode changed! Now using <b>{useNumbers ? 'Numbers' : 'Colors'}</b>
+            </Typography>
+          )}
           <Grid container spacing={2} justifyContent="center" mb={2}>
-            {COLORS.map(color => (
-              <Grid item key={color} xs={3}>
+            {items && items.length > 0 ? items.map(item => (
+              <Grid item key={item} xs={3} sm={2}>
                 <Paper
                   sx={{
-                    bgcolor: activeColor === color ? color : 'grey.300',
+                    bgcolor: useNumbers
+                      ? (activeItem === item ? 'primary.light' : 'grey.100')
+                      : (activeItem === item ? item : 'grey.300'),
                     height: 60,
                     width: 60,
                     cursor: showing || waiting || gameOver ? 'default' : 'pointer',
-                    border: feedback === 'wrong' && !showing && !waiting ? '2px solid red' : undefined,
+                    border: feedback === 'wrong' && activeItem === item ? '3px solid red' :
+                            feedback === 'correct' && activeItem === item ? '3px solid green' :
+                            activeItem === item ? '4px solid #fff' : undefined,
+                    boxShadow: activeItem === item ? '0 0 16px 4px rgba(0,0,0,0.25)' : undefined,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 24,
+                    fontWeight: 'bold',
+                    color: useNumbers ? 'black' : 'transparent',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: showing || waiting || gameOver ? 'none' : 'scale(1.05)',
+                    }
                   }}
-                  onClick={() => handleTileClick(color)}
-                />
+                  aria-label={useNumbers ? `Number ${item}` : `Color block`}
+                  onClick={() => handleTileClick(item)}
+                >
+                  {useNumbers ? item : ''}
+                </Paper>
               </Grid>
-            ))}
+            )) : null}
           </Grid>
+          {feedback === 'correct' && !gameOver && (
+            <Typography align="center" color="success.main" mb={1}>Correct!</Typography>
+          )}
+          {feedback === 'wrong' && (
+            <Typography align="center" color="error.main" mb={1}>Wrong! Game Over.</Typography>
+          )}
           <Box>
-            <Typography>Progress: {userInput.length} / {round}</Typography>
+            <Typography>Progress: {userInput.length} / {sequence.length}</Typography>
+            <Typography>Score: {score}</Typography>
           </Box>
         </Box>
       )}

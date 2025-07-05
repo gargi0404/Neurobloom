@@ -31,7 +31,7 @@ A web-based mental health support platform with role-based login, interactive co
 ```sh
 # From project root
 cd client && yarn install
-cd ../server && yarn install
+cd /Users/gargishinde/Desktop/NEUROBLOOM/server && yarn install
 ```
 
 ### Run
@@ -41,7 +41,7 @@ cd ../server && yarn install
   ```
 - **Backend:**
   ```sh
-  cd server && yarn dev
+  cd /Users/gargishinde/Desktop/NEUROBLOOM/server && npm run dev
   ```
 
 ### Deployment

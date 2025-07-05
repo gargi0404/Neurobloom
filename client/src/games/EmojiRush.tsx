@@ -5,38 +5,59 @@ import { getAuth } from 'firebase/auth';
 import axios from 'axios';
 
 const EMOJIS = [
-  { emoji: '😀', label: 'Happy' },
-  { emoji: '😢', label: 'Sad' },
-  { emoji: '😡', label: 'Angry' },
-  { emoji: '😮', label: 'Surprised' },
-  { emoji: '😱', label: 'Scared' },
-  { emoji: '😐', label: 'Neutral' },
-  { emoji: '😂', label: 'Laughing' },
-  { emoji: '😭', label: 'Crying' },
+  { emoji: '😀', label: 'Happy', description: 'Feeling joyful and content' },
+  { emoji: '😢', label: 'Sad', description: 'Feeling down or disappointed' },
+  { emoji: '😡', label: 'Angry', description: 'Feeling mad or frustrated' },
+  { emoji: '😮', label: 'Surprised', description: 'Feeling shocked or amazed' },
+  { emoji: '😱', label: 'Scared', description: 'Feeling afraid or frightened' },
+  { emoji: '😐', label: 'Neutral', description: 'Feeling calm or indifferent' },
+  { emoji: '😂', label: 'Laughing', description: 'Finding something very funny' },
+  { emoji: '😭', label: 'Crying', description: 'Feeling very sad or hurt' },
+  { emoji: '😊', label: 'Pleased', description: 'Feeling satisfied and happy' },
+  { emoji: '😤', label: 'Determined', description: 'Feeling strong and focused' },
+  { emoji: '🤔', label: 'Confused', description: 'Feeling uncertain or puzzled' },
+  { emoji: '😴', label: 'Tired', description: 'Feeling sleepy or exhausted' },
+  { emoji: '🤗', label: 'Hugging', description: 'Feeling warm and caring' },
+  { emoji: '😎', label: 'Cool', description: 'Feeling confident and relaxed' },
+  { emoji: '🥺', label: 'Pleading', description: 'Feeling hopeful or begging' },
+  { emoji: '🤩', label: 'Excited', description: 'Feeling thrilled and enthusiastic' },
 ];
 const DIFFICULTY = 4; // Number of options per round
-const ROUNDS = 10;
-const TIME_PER_ROUND = 5000; // ms
+const ROUNDS = 15;
+const TIME_PER_ROUND = 8000; // ms - longer time for ASD support
 
 function shuffle<T>(arr: T[]): T[] {
   return arr.slice().sort(() => Math.random() - 0.5);
 }
 
-function playSound(type: 'correct' | 'wrong') {
+function playSound(type: 'correct' | 'wrong' | 'tick') {
   const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
   const o = ctx.createOscillator();
   o.type = 'sine';
-  o.frequency.value = type === 'correct' ? 880 : 220;
+  
+  if (type === 'correct') {
+    // Happy ascending sound
+    o.frequency.value = 880;
+    o.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.3);
+  } else if (type === 'wrong') {
+    // Sad descending sound
+    o.frequency.value = 440;
+    o.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.3);
+  } else {
+    // Tick sound
+    o.frequency.value = 660;
+  }
+  
   o.connect(ctx.destination);
   o.start();
-  o.stop(ctx.currentTime + 0.2);
+  o.stop(ctx.currentTime + (type === 'tick' ? 0.1 : 0.3));
 }
 
 const EmojiRush: React.FC = () => {
   const { user } = useAuth();
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [current, setCurrent] = useState<{ emoji: string; label: string } | null>(null);
+  const [current, setCurrent] = useState<{ emoji: string; label: string; description: string } | null>(null);
   const [options, setOptions] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
@@ -44,6 +65,7 @@ const EmojiRush: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [timer, setTimer] = useState(TIME_PER_ROUND);
+  const [showHint, setShowHint] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Start new round
@@ -58,9 +80,10 @@ const EmojiRush: React.FC = () => {
     setSelected(null);
     setFeedback(null);
     setTimer(TIME_PER_ROUND);
+    setShowHint(false);
   };
 
-  // Timer logic
+  // Timer logic with sound feedback
   useEffect(() => {
     if (gameOver || selected) return;
     if (timer <= 0) {
@@ -69,12 +92,25 @@ const EmojiRush: React.FC = () => {
       setTimeout(() => {
         if (round + 1 === ROUNDS) setGameOver(true);
         else setRound(r => r + 1);
-      }, 700);
+      }, 1000);
       return;
     }
+    
+    // Play tick sound every 2 seconds
+    if (timer % 2000 === 0 && timer > 0) {
+      playSound('tick');
+    }
+    
     timerRef.current = setTimeout(() => setTimer(t => t - 100), 100);
     return () => clearTimeout(timerRef.current!);
   }, [timer, gameOver, selected, round]);
+
+  // Show hint after 4 seconds
+  useEffect(() => {
+    if (timer <= TIME_PER_ROUND - 4000 && !showHint && !selected && !gameOver) {
+      setShowHint(true);
+    }
+  }, [timer, showHint, selected, gameOver]);
 
   // New round or end
   useEffect(() => {
@@ -97,7 +133,7 @@ const EmojiRush: React.FC = () => {
     setTimeout(() => {
       if (round + 1 === ROUNDS) setGameOver(true);
       else setRound(r => r + 1);
-    }, 700);
+    }, 1000);
   };
 
   // Submit score
@@ -122,15 +158,21 @@ const EmojiRush: React.FC = () => {
     setGameOver(false);
     setSubmitted(false);
     setTimer(TIME_PER_ROUND);
+    setShowHint(false);
   };
 
   return (
     <Box p={2}>
       <Typography variant="h5" mb={2}>Emoji Rush</Typography>
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        Helps with: Autism Spectrum Disorder (ASD) | Trains: Emotion Recognition, Social Interpretation
+      </Typography>
+      
       {gameOver ? (
         <Box>
           <Typography variant="h6">Game Over!</Typography>
           <Typography>Your Score: {score} / {ROUNDS}</Typography>
+          <Typography>Accuracy: {Math.round((score / ROUNDS) * 100)}%</Typography>
           {!submitted ? (
             <Button variant="contained" onClick={handleSubmitScore} disabled={submitting} sx={{ mt: 1 }}>
               {submitting ? 'Submitting...' : 'Submit Score'}
@@ -146,11 +188,26 @@ const EmojiRush: React.FC = () => {
         <Box>
           <Typography mb={1}>Match the emoji to the correct emotion before time runs out!</Typography>
           <Box display="flex" justifyContent="center" alignItems="center" mb={2}>
-            <Paper elevation={3} sx={{ fontSize: 64, p: 2, minWidth: 100, textAlign: 'center' }}>
+            <Paper elevation={3} sx={{ fontSize: 80, p: 3, minWidth: 120, textAlign: 'center', bgcolor: 'grey.50' }}>
               {current?.emoji}
             </Paper>
           </Box>
-          <LinearProgress variant="determinate" value={(timer / TIME_PER_ROUND) * 100} sx={{ mb: 2 }} />
+          
+          {showHint && current && (
+            <Box mb={2} p={2} bgcolor="info.light" borderRadius={1}>
+              <Typography variant="body2" color="info.contrastText">
+                💡 Hint: {current.description}
+              </Typography>
+            </Box>
+          )}
+          
+          <LinearProgress 
+            variant="determinate" 
+            value={(timer / TIME_PER_ROUND) * 100} 
+            sx={{ mb: 2, height: 8, borderRadius: 4 }}
+            color={timer < 2000 ? 'error' : timer < 4000 ? 'warning' : 'primary'}
+          />
+          
           <Grid container spacing={2} justifyContent="center">
             {options.map(label => (
               <Grid item key={label} xs={6} sm={3}>
@@ -159,7 +216,15 @@ const EmojiRush: React.FC = () => {
                   color={selected === label ? (feedback === 'correct' && label === current?.label ? 'success' : 'error') : 'primary'}
                   onClick={() => handleSelect(label)}
                   fullWidth
-                  sx={{ fontSize: 18, mb: 1 }}
+                  sx={{ 
+                    fontSize: 16, 
+                    mb: 1, 
+                    py: 1.5,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                    }
+                  }}
                   disabled={!!selected}
                 >
                   {label}
@@ -167,7 +232,9 @@ const EmojiRush: React.FC = () => {
               </Grid>
             ))}
           </Grid>
-          <Typography mt={2}>Round: {round + 1} / {ROUNDS} | Score: {score}</Typography>
+          <Typography mt={2} textAlign="center">
+            Round: {round + 1} / {ROUNDS} | Score: {score} | Time: {Math.ceil(timer / 1000)}s
+          </Typography>
         </Box>
       )}
     </Box>
@@ -175,3 +242,4 @@ const EmojiRush: React.FC = () => {
 };
 
 export default EmojiRush; 
+  

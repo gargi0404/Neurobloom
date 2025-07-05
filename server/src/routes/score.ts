@@ -42,4 +42,28 @@ router.get('/my', firebaseAuth, async (req: AuthenticatedRequest, res: Response)
   }
 });
 
+// Submit a screener result
+router.post('/screener', firebaseAuth, async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+  const { screenerType, screenerScore, screenerDetails, screenerRaw } = req.body;
+  if (!screenerType || typeof screenerScore !== 'number') {
+    return res.status(400).json({ error: 'screenerType and screenerScore required' });
+  }
+  try {
+    const userDoc = await User.findOne({ uid: req.user.uid });
+    if (!userDoc) return res.status(404).json({ error: 'User not found' });
+    const newScreener = new Score({
+      user: userDoc._id,
+      screenerType,
+      screenerScore,
+      screenerDetails,
+      screenerRaw,
+    });
+    await newScreener.save();
+    res.status(201).json(newScreener);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', details: err });
+  }
+});
+
 export default router; 

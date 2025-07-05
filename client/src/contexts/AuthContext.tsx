@@ -3,15 +3,26 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, User 
 import { initializeApp } from 'firebase/app';
 import axios from 'axios';
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-};
+// Check if Firebase config is available
+const hasFirebaseConfig = import.meta.env.VITE_FIREBASE_API_KEY && 
+                         import.meta.env.VITE_FIREBASE_AUTH_DOMAIN && 
+                         import.meta.env.VITE_FIREBASE_PROJECT_ID && 
+                         import.meta.env.VITE_FIREBASE_APP_ID;
 
-initializeApp(firebaseConfig);
-const auth = getAuth();
+let auth: any = null;
+
+if (hasFirebaseConfig) {
+  const firebaseConfig = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  };
+  initializeApp(firebaseConfig);
+  auth = getAuth();
+} else {
+  console.warn('Firebase configuration not found. Running in development mode with mock authentication.');
+}
 
 export interface UserProfile {
   uid: string;
@@ -63,6 +74,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
+    if (!auth) {
+      // Development mode - no Firebase
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
@@ -72,12 +89,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [fetchProfile]);
 
   const login = async (email: string, password: string) => {
+    if (!auth) {
+      // Development mode - mock login
+      setLoading(true);
+      setTimeout(() => {
+        const mockUser = {
+          uid: 'dev-user-123',
+          email: email,
+          getIdToken: async () => 'mock-token'
+        } as User;
+        setUser(mockUser);
+        setNeedsProfile(true);
+        setLoading(false);
+      }, 1000);
+      return;
+    }
+
     setLoading(true);
     await signInWithEmailAndPassword(auth, email, password);
     setLoading(false);
   };
 
   const logout = async () => {
+    if (!auth) {
+      // Development mode - mock logout
+      setLoading(true);
+      setTimeout(() => {
+        setUser(null);
+        setProfile(null);
+        setNeedsProfile(false);
+        setLoading(false);
+      }, 500);
+      return;
+    }
+
     setLoading(true);
     await signOut(auth);
     setLoading(false);

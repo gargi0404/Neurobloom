@@ -37,4 +37,31 @@ router.get('/user/:uid/scores', firebaseAuth, requireTherapist, async (req: Auth
   }
 });
 
+// Add a new patient (user) - therapist only
+router.post('/users', firebaseAuth, requireTherapist, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { fullName, disorder } = req.body;
+    if (!fullName || !disorder) {
+      return res.status(400).json({ error: 'Full name and disorder are required.' });
+    }
+    // Create a new user with minimal fields (no email, no auth, just for tracking)
+    const newUser = new User({
+      name: fullName,
+      disorder,
+      role: 'user',
+    });
+    await newUser.save();
+    // Return the new user, omitting sensitive fields
+    res.status(201).json({
+      uid: newUser._id,
+      name: newUser.name,
+      disorder: newUser.disorder,
+      role: newUser.role,
+      createdAt: newUser.createdAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', details: err });
+  }
+});
+
 export default router; 
