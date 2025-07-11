@@ -84,6 +84,11 @@ const ScreenerPage: React.FC = () => {
                 RAADS-R: Ritvo Autism Asperger Diagnostic Scale-Revised. Developed by Dr. Riva Ariella Ritvo et al. Source: <a href="https://www.aspietests.org/raads/index.php" target="_blank" rel="noopener noreferrer">aspietests.org</a>
               </Typography>
             )}
+            {selected === 'adhd' && (
+              <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary', textAlign: 'center' }}>
+                ASRS v1.1: Adult ADHD Self-Report Scale. Developed by the World Health Organization (WHO) in collaboration with the Workgroup on Adult ADHD. Source: <a href="https://www.hcp.med.harvard.edu/ncs/asrs.php" target="_blank" rel="noopener noreferrer">hcp.med.harvard.edu/ncs/asrs.php</a>
+              </Typography>
+            )}
             <Button variant="contained" size="large" color="primary" onClick={handleStart}>Start Test</Button>
           </Stack>
         )}
@@ -91,7 +96,7 @@ const ScreenerPage: React.FC = () => {
           <Box>
             {selected === 'phq9' && <PHQ9Screener onComplete={handleScreenerComplete} />}
             {selected === 'asd' && <ASDScreener onComplete={handleScreenerComplete} />}
-            {selected === 'adhd' && <ADHDScreener />}
+            {selected === 'adhd' && <ADHDScreener onComplete={handleScreenerComplete} />}
           </Box>
         )}
         {step === 'result' && (
