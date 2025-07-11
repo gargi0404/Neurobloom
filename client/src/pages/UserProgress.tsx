@@ -7,11 +7,11 @@ import axios from 'axios';
 import Header from '../components/Header';
 import { PageWrapper } from "../components/PageWrapper";
 
-const GAME_KEYS = [
-  { key: 'emoji_rush', label: 'Emoji Rush' },
-  { key: 'logic_zone', label: 'Logic Zone' },
-  { key: 'taskflex', label: 'Taskflex' },
+const gameLabels = [
   { key: 'pattern_heist', label: 'Pattern Heist' },
+  { key: 'emoji_rush', label: 'Emotion Rush' },
+  { key: 'logic_zone', label: 'Logic Zone' },
+  { key: 'taskflex', label: 'TaskFlex' },
 ];
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#a4de6c', '#d0ed57', '#8dd1e1', '#d88884'];
 
@@ -49,7 +49,7 @@ const UserProgress: React.FC<UserProgressProps> = ({ scores: propScores, hideHea
   }, [user, propScores]);
 
   // Aggregate scores by game
-  const gameData = GAME_KEYS.map(game => {
+  const gameData = gameLabels.map(game => {
     const gameScores = scores.filter(s => s.game === game.key);
     return {
       name: game.label,

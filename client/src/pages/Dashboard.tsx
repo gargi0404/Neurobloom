@@ -1,8 +1,7 @@
 /// <reference types="vite/client" />
 
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Typography, Paper, Grid, Drawer, List, ListItem, ListItemText, Avatar, useMediaQuery, AppBar, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Box, Button, Typography, Paper, Grid, Drawer, List, ListItem, ListItemText, Avatar, useMediaQuery, IconButton } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -11,18 +10,12 @@ import patternImg from '../pattern.jpeg';
 import emojiImg from '../emoji.jpeg';
 import logicImg from '../logic.jpeg';
 import taskImg from '../task.jpeg';
-import AdbIcon from '@mui/icons-material/Adb';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import HomeIcon from '@mui/icons-material/Home';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import PersonIcon from '@mui/icons-material/Person';
 import { deepPurple } from '@mui/material/colors';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Header from '../components/Header';
-import PHQ9Screener from '../components/PHQ9Screener';
-import ASDScreener from '../components/ASDScreener';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FlagIcon from '@mui/icons-material/Flag';
@@ -31,39 +24,18 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, isSameDay, isAfter, parseISO } from 'date-fns';
 import type { PickersDayProps } from '@mui/x-date-pickers/PickersDay';
-import MuiTooltip from '@mui/material/Tooltip';
 import '@fontsource/inter';
 import logo from '../logo.jpg';
 import { PageWrapper } from "../components/PageWrapper";
-import "@fontsource/montserrat/700.css";
-import "@fontsource/raleway/500.css";
 import "@fontsource/raleway/600.css";
 
 const GAME_KEYS = ['pattern_heist', 'emoji_rush', 'logic_zone', 'taskflex'];
 
-// Define sidebarNav type to allow 'action' as an optional property
-type SidebarNavItem = {
-  label: string;
-  icon: React.ElementType;
-  path?: string;
-  action?: string;
-};
-
-const sidebarNav: SidebarNavItem[] = [
-  { label: 'Home', icon: HomeIcon, path: '/dashboard' },
-  { label: 'Games', icon: SportsEsportsIcon, path: '/games' },
-  { label: 'Progress', icon: BarChartIcon, path: '/progress' },
-  { label: 'Profile', icon: PersonIcon, path: '/profile' },
-  { label: 'Screeners', icon: AssignmentIcon, path: '/screener' },
-  { label: 'Weekly Goals', icon: FlagIcon, path: '/weekly-goals' },
-  { label: 'History by Date', icon: CalendarTodayIcon, path: '/history-by-date' },
-];
-
 const COLORS = ['#6EC6FF', '#FF8A80', '#81C784', '#FFD54F']; // Slightly darker, more saturated pastels
 
 const gameCards = [
+  { key: 'emoji_rush', name: 'Emotion Rush', route: '/game/emoji', img: emojiImg },
   { key: 'pattern_heist', name: 'Pattern Heist', route: '/game/pattern', img: patternImg },
-  { key: 'emoji_rush', name: 'Emoji Rush', route: '/game/emoji', img: emojiImg },
   { key: 'logic_zone', name: 'Logic Zone', route: '/game/logic', img: logicImg },
   { key: 'taskflex', name: 'TaskFlex', route: '/game/taskflex', img: taskImg },
 ];
@@ -178,64 +150,80 @@ const Dashboard: React.FC = () => {
           <Box sx={{ display: 'flex', pt: 8 }}>
             <Drawer
               variant="permanent"
-              open={!collapsed}
               sx={{
                 width: collapsed ? 64 : 260,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
                   width: collapsed ? 64 : 260,
                   boxSizing: 'border-box',
-                  bgcolor: '#fff',
-                  borderRight: 'none',
-                  boxShadow: 3,
-                  pt: 4,
-                  fontFamily: 'Inter, sans-serif',
+                  bgcolor: '#fafbfc',
+                  borderRight: '1px solid #eee',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                   transition: 'width 0.2s',
                   overflowX: 'hidden',
                 },
               }}
+              open
             >
-              <Box display="flex" alignItems="center" justifyContent={collapsed ? 'center' : 'flex-end'} px={collapsed ? 0 : 2} py={2}>
-                <IconButton onClick={() => setCollapsed(!collapsed)}>
-                  {collapsed ? <MenuIcon /> : <ChevronLeftIcon />}
-                </IconButton>
+              <Box>
+                <Box display="flex" alignItems="center" px={collapsed ? 1 : 3} py={3} justifyContent={collapsed ? 'center' : 'space-between'}>
+                  <Box display="flex" alignItems="center">
+                    <img src={logo} alt="Neuroblooming Logo" style={{ width: 36, height: 36, borderRadius: 8, marginRight: collapsed ? 0 : 8 }} />
+                    {!collapsed && (
+                      <Typography
+                        fontWeight={600}
+                        sx={{
+                          letterSpacing: 1,
+                          fontFamily: "'Raleway', 'Inter', sans-serif",
+                          color: "#2d2d4b",
+                          fontSize: { xs: 22, sm: 26, md: 30 },
+                          textShadow: "0 1px 4px rgba(45,45,75,0.06)",
+                        }}
+                      >
+                        Neuroblooming
+                      </Typography>
+                    )}
+                  </Box>
+                  <IconButton onClick={() => setCollapsed(c => !c)} sx={{ ml: collapsed ? 0 : 1 }}>
+                    <HomeIcon />
+                  </IconButton>
+                </Box>
+                <List>
+                  <ListItem button key="Home" onClick={() => navigate('/dashboard')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><HomeIcon /></Box>
+                    {!collapsed && <ListItemText primary="Home" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="Games" onClick={() => navigate('/games')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><SportsEsportsIcon /></Box>
+                    {!collapsed && <ListItemText primary="Games" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="Progress" onClick={() => navigate('/progress')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><BarChartIcon /></Box>
+                    {!collapsed && <ListItemText primary="Progress" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="Screeners" onClick={() => navigate('/screener')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><AssignmentIcon /></Box>
+                    {!collapsed && <ListItemText primary="Screeners" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="Weekly Goals" onClick={() => navigate('/weekly-goals')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><FlagIcon /></Box>
+                    {!collapsed && <ListItemText primary="Weekly Goals" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="History by Date" onClick={() => navigate('/history-by-date')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><CalendarTodayIcon /></Box>
+                    {!collapsed && <ListItemText primary="History by Date" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="Profile" onClick={() => navigate('/profile')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><PersonIcon /></Box>
+                    {!collapsed && <ListItemText primary="Profile" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                </List>
               </Box>
-              <List>
-                {sidebarNav.map((item, idx) => {
-                  const isActive = window.location.pathname === item.path;
-                  const IconComponent = item.icon;
-                  return (
-                    <ListItem button key={item.label} onClick={() => item.path && navigate(item.path)} sx={{
-                      mb: 1,
-                      borderRadius: 2,
-                      pl: collapsed ? 1 : 2,
-                      pr: collapsed ? 1 : 2,
-                      justifyContent: collapsed ? 'center' : 'flex-start',
-                      minHeight: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      fontWeight: 500,
-                      fontSize: 18,
-                      fontFamily: 'Inter, sans-serif',
-                      transition: '0.2s',
-                      color: isActive ? '#fff' : '#222',
-                      bgcolor: isActive ? 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)' : 'transparent',
-                      '&:hover': {
-                        bgcolor: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)',
-                        color: '#fff',
-                      },
-                    }}>
-                      <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center">
-                        <IconComponent style={{ color: isActive ? '#fff' : '#222' }} />
-                      </Box>
-                      {!collapsed && <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif', color: isActive ? '#fff' : '#222' }} />}
-                    </ListItem>
-                  );
-                })}
-              </List>
               {/* User Profile at Bottom */}
               <Box px={collapsed ? 0 : 3} py={2} borderTop="1px solid #eee" display="flex" alignItems="center" justifyContent={collapsed ? 'center' : 'flex-start'}>
-                <Avatar sx={{ bgcolor: deepPurple[500], width: 40, height: 40, mr: collapsed ? 0 : 2 }} src={user?.photoURL || undefined}>
+                <Avatar sx={{ width: 72, height: 72, mb: 2, bgcolor: deepPurple[500] }} src={user?.photoURL || undefined}>
                   {user?.email ? user.email[0].toUpperCase() : 'U'}
                 </Avatar>
                 {!collapsed && (

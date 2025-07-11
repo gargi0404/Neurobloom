@@ -40,7 +40,7 @@ const Header: React.FC = () => {
           display="flex" 
           alignItems="center" 
           sx={{ cursor: 'pointer' }}
-          onClick={() => navigate('/')}
+          onClick={() => navigate(isAuthenticated ? '/dashboard' : '/')}
         >
           <img 
             src={logo} 
@@ -67,26 +67,6 @@ const Header: React.FC = () => {
 
         {/* Navigation Buttons */}
         <Box display="flex" alignItems="center" gap={isMobile ? 1 : 2}>
-          {isAuthenticated && !isHomePage && (
-            <Button 
-              color="primary" 
-              variant="contained" 
-              size={isMobile ? "small" : "medium"}
-              sx={{ 
-                fontWeight: 600, 
-                borderRadius: 2,
-                fontSize: isMobile ? '0.75rem' : '0.875rem',
-                px: isMobile ? 1.5 : 2,
-                backgroundColor: '#3f51b5',
-                '&:hover': {
-                  backgroundColor: '#303f9f',
-                },
-              }} 
-              onClick={() => navigate('/')}
-            >
-              Home
-            </Button>
-          )}
           
           {!isHomePage && (
             <Button 

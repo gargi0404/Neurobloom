@@ -10,29 +10,33 @@ import { PageWrapper } from "../components/PageWrapper";
 
 const games = [
   {
-    label: 'Emoji Rush',
-    route: '/game/emoji',
-    description: 'Match facial expression emojis to the correct emotion label. Helps with Autism Spectrum Disorder (ASD) by training emotion recognition and social interpretation.',
-    img: emojiImg,
-  },
-  {
-    label: 'Logic Zone',
-    route: '/game/logic',
-    description: 'Sort items by logic (e.g., Fruit vs. Not Fruit). Supports Depression/Anxiety by training categorization and logical reasoning.',
-    img: logicImg,
-  },
-  {
-    label: 'Taskflex',
-    route: '/game/taskflex',
-    description: 'Rule-switching sorting game. First sort by color, then by shape. Designed for ADHD, it trains cognitive flexibility and attention.',
-    img: taskImg,
-  },
-  {
+    key: 'pattern_heist',
     label: 'Pattern Heist',
-    route: '/game/pattern',
-    description: 'Simon-style memory sequence puzzle. Repeat the color sequence. Supports Schizophrenia by training working memory and pattern recognition.',
-    img: patternImg,
+    description: 'Test your pattern recognition and memory skills with this engaging game.',
+    image: patternImg,
+    route: '/game/pattern'
   },
+  {
+    key: 'emoji_rush',
+    label: 'Emotion Rush',
+    description: 'Improve your emotional recognition and processing speed.',
+    image: emojiImg,
+    route: '/game/emoji'
+  },
+  {
+    key: 'logic_zone',
+    label: 'Logic Zone',
+    description: 'Challenge your logical thinking and problem-solving abilities.',
+    image: logicImg,
+    route: '/game/logic'
+  },
+  {
+    key: 'taskflex',
+    label: 'TaskFlex',
+    description: 'Enhance your attention and task-switching capabilities.',
+    image: taskImg,
+    route: '/game/taskflex'
+  }
 ];
 
 const GamesInfo: React.FC = () => {
@@ -47,7 +51,7 @@ const GamesInfo: React.FC = () => {
             <Grid item xs={12} sm={6} md={6} key={game.route}>
               <Paper elevation={4} sx={{ p: 0, borderRadius: 4, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', boxShadow: 3 }}>
                 <Box sx={{ width: '100%', height: 180, bgcolor: '#e3f0fb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src={game.img} alt={game.label} style={{ maxHeight: 140, maxWidth: '90%', objectFit: 'contain', borderRadius: 8, boxShadow: '0 2px 8px #b3c6e0' }} />
+                  <img src={game.image} alt={game.label} style={{ maxHeight: 140, maxWidth: '90%', objectFit: 'contain', borderRadius: 8, boxShadow: '0 2px 8px #b3c6e0' }} />
                 </Box>
                 <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <Typography variant="h5" fontWeight={500} mb={1} color="primary.main">{game.label}</Typography>
