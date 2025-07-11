@@ -19,6 +19,8 @@ import Header from '../components/Header';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FlagIcon from '@mui/icons-material/Flag';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { DateCalendar, PickersDay } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -168,7 +170,7 @@ const Dashboard: React.FC = () => {
               open
             >
               <Box>
-                <Box display="flex" alignItems="center" px={collapsed ? 1 : 3} py={3} justifyContent={collapsed ? 'center' : 'space-between'}>
+                <Box display="flex" alignItems="center" px={collapsed ? 1 : 3} py={3} justifyContent="space-between">
                   <Box display="flex" alignItems="center">
                     <img src={logo} alt="Neuroblooming Logo" style={{ width: 36, height: 36, borderRadius: 8, marginRight: collapsed ? 0 : 8 }} />
                     {!collapsed && (
@@ -186,12 +188,25 @@ const Dashboard: React.FC = () => {
                       </Typography>
                     )}
                   </Box>
-                  <IconButton onClick={() => setCollapsed(c => !c)} sx={{ ml: collapsed ? 0 : 1 }}>
-                    <HomeIcon />
+                  <IconButton 
+                    onClick={() => setCollapsed(c => !c)} 
+                    sx={{ 
+                      bgcolor: 'rgba(0,0,0,0.04)',
+                      '&:hover': {
+                        bgcolor: 'rgba(0,0,0,0.08)',
+                      },
+                      width: 32,
+                      height: 32,
+                      color: '#666',
+                      border: '1px solid #e0e0e0',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+                    }}
+                  >
+                    {collapsed ? <ChevronRightIcon fontSize="small" /> : <ChevronLeftIcon fontSize="small" />}
                   </IconButton>
                 </Box>
                 <List>
-                  <ListItem button key="Home" onClick={() => navigate('/dashboard')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                  <ListItem button key="Home" onClick={() => { navigate('/dashboard'); setCollapsed(c => !c); }} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
                     <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><HomeIcon /></Box>
                     {!collapsed && <ListItemText primary="Home" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
                   </ListItem>
