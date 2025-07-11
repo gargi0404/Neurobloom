@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import Header from '../components/Header';
+import { PageWrapper } from "../components/PageWrapper";
 
 const GAME_KEYS = [
   { key: 'emoji_rush', label: 'Emoji Rush' },
@@ -14,21 +15,22 @@ const GAME_KEYS = [
 ];
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#a4de6c', '#d0ed57', '#8dd1e1', '#d88884'];
 
-interface UserRow {
-  uid: string;
-  name: string;
-  email: string;
-  role: string;
-  createdAt: string;
+interface UserProgressProps {
+  scores?: any[];
+  hideHeader?: boolean;
 }
 
-const UserProgress: React.FC = () => {
+const UserProgress: React.FC<UserProgressProps> = ({ scores: propScores, hideHeader }) => {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
-  const [scores, setScores] = useState<any[]>([]);
+  const [scores, setScores] = useState<any[]>(propScores || []);
   const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
+    if (propScores) {
+      setScores(propScores);
+      return;
+    }
     const fetchScores = async () => {
       if (!user) return;
       setFetching(true);
@@ -44,7 +46,7 @@ const UserProgress: React.FC = () => {
       setFetching(false);
     };
     fetchScores();
-  }, [user]);
+  }, [user, propScores]);
 
   // Aggregate scores by game
   const gameData = GAME_KEYS.map(game => {
@@ -56,16 +58,18 @@ const UserProgress: React.FC = () => {
     };
   });
 
-  if (loading) return <Box p={4}><CircularProgress /></Box>;
+  if (loading || fetching) return <Box p={4}><CircularProgress /></Box>;
 
   return (
-    <>
-      <Header />
-      <Box p={4} bgcolor="#f5f5f5" minHeight="100vh" sx={{ pt: 10 }}>
-        <Button variant="outlined" sx={{ mb: 2 }} onClick={() => navigate('/dashboard')}>
-          Back to Dashboard
-        </Button>
-        <Typography variant="h4" mb={2}>Your Progress</Typography>
+    <PageWrapper variant="progress">
+      {!hideHeader && <Header />}
+      <Box p={4} sx={{ pt: 10 }}>
+        {!hideHeader && (
+          <Button variant="outlined" sx={{ mb: 2 }} onClick={() => navigate('/dashboard')}>
+            Back to Dashboard
+          </Button>
+        )}
+        {!hideHeader && <Typography variant="h4" mb={2}>Your Progress</Typography>}
         <Grid container spacing={4}>
           {gameData.map((data, idx) => (
             <Grid item xs={12} sm={6} md={3} key={data.name}>
@@ -97,7 +101,7 @@ const UserProgress: React.FC = () => {
           ))}
         </Grid>
       </Box>
-    </>
+    </PageWrapper>
   );
 };
 

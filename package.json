@@ -13,7 +13,12 @@
     "dev:ml": "yarn workspace ml dev"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.6",
+    "@fontsource/montserrat": "^5.2.6",
+    "@fontsource/raleway": "^5.2.6",
     "@mui/icons-material": "^7.1.2",
+    "@mui/x-date-pickers": "^8.7.0",
+    "date-fns": "^4.1.0",
     "mongodb": "^6.17.0",
     "yn": "^5.0.0"
   },

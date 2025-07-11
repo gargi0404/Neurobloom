@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Drawer, List, ListItem, ListItemText, AppBar, Toolbar, Typography, Button, Avatar, Stack, Paper, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, Fade, Slide, useMediaQuery
+  Box, Drawer, List, ListItem, ListItemText, AppBar, Toolbar, Typography, Button, Avatar, Stack, Paper, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, Fade, Slide, useMediaQuery, Grid
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,10 +12,22 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from '@mui/icons-material/Add';
 import PeopleIcon from '@mui/icons-material/People';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import HomeIcon from '@mui/icons-material/Home';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import FlagIcon from '@mui/icons-material/Flag';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import { deepPurple } from '@mui/material/colors';
 import axios from 'axios';
 import Header from '../components/Header';
 import logo from '../logo.jpg';
 import HistoryByDate from './HistoryByDate';
+import UserProgress from './UserProgress';
+import { useNavigate } from 'react-router-dom';
+import '@fontsource/inter';
+import "@fontsource/montserrat/700.css";
+import "@fontsource/raleway/500.css";
+import "@fontsource/raleway/600.css";
+import { PageWrapper } from "../components/PageWrapper";
 
 const COLORS = ['#43a047', '#e53935', '#ffd600', '#1e88e5'];
 const SIDEBAR_WIDTH = 280;
@@ -25,6 +37,7 @@ const themeColors = {
 };
 
 const sidebarMenu = [
+  { label: 'Home', icon: <HomeIcon />, key: 'home' },
   { label: 'Patient List', key: 'dashboard', icon: <PeopleIcon /> },
   { label: 'Progress Reports', key: 'progress' },
   { label: 'History by Date', key: 'history', icon: <CalendarTodayIcon /> },
@@ -34,6 +47,7 @@ const initialPatient = { fullName: '', disorder: '' };
 
 const TherapistDashboard: React.FC = () => {
   const { user, profile, logout } = useAuth();
+  const navigate = useNavigate();
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<'dashboard' | 'progress' | 'history'>('dashboard');
@@ -47,6 +61,7 @@ const TherapistDashboard: React.FC = () => {
   const [viewPatient, setViewPatient] = useState<any | null>(null);
   const [viewProgress, setViewProgress] = useState<any[]>([]);
   const [progressLoading, setProgressLoading] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -164,318 +179,191 @@ const TherapistDashboard: React.FC = () => {
   }
 
   return (
-    <>
+    <PageWrapper variant="therapistHome">
       <Header />
-      <Box p={4} bgcolor="#f5f5f5" minHeight="100vh" sx={{ pt: 10 }}>
-        <Box sx={{ minHeight: '100vh', bgcolor: themeColors.background, display: 'flex' }}>
-          {/* Sidebar */}
-          <Slide direction="left" in={true} timeout={700}>
+      <Box sx={{ position: 'relative', overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}>
+        {/* Abstract colorful shapes */}
+        <Box sx={{ position: 'absolute', top: '-120px', right: '-180px', zIndex: 0 }}>
+          <svg width="500" height="350" viewBox="0 0 500 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="350" cy="120" rx="200" ry="120" fill="url(#paint0_linear)" fillOpacity="0.7" />
+            <defs>
+              <linearGradient id="paint0_linear" x1="150" y1="0" x2="500" y2="350" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#ff7eb3" />
+                <stop offset="1" stopColor="#65e4ff" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </Box>
+        <Box sx={{ position: 'absolute', bottom: '-80px', right: '-60px', zIndex: 0 }}>
+          <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="100" fill="#ffe066" fillOpacity="0.5" />
+          </svg>
+        </Box>
+        {/* Dashboard Content */}
+        <Box sx={{ position: 'relative', zIndex: 1, pt: 8, px: { xs: 2, md: 6 }, maxWidth: 1200, mx: 'auto' }}>
+          <Box textAlign="center" mb={5}>
+            <Typography variant="h3" fontWeight={500} color="#2d2d4b" mb={0.5} sx={{ fontFamily: 'Inter, sans-serif', letterSpacing: 1, fontSize: { xs: 28, md: 36 } }}>
+              Therapist Dashboard
+            </Typography>
+            <Box sx={{ width: 60, height: 5, bgcolor: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)', borderRadius: 2, mb: 2, mx: 'auto', background: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)' }} />
+            <Typography variant="body1" fontWeight={400} color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
+              Welcome back, {profile?.name || 'Therapist'}! Here's your patient overview and tools.
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', pt: 8 }}>
             <Drawer
-              variant={isMobile ? 'temporary' : 'permanent'}
-              open
+              variant="permanent"
               sx={{
-                width: SIDEBAR_WIDTH,
+                width: collapsed ? 64 : 260,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
-                  width: SIDEBAR_WIDTH,
-                  bgcolor: '#f7fbff',
-                  color: themeColors.primary,
+                  width: collapsed ? 64 : 260,
                   boxSizing: 'border-box',
-                  pt: 0,
-                  borderRight: '1.5px solid #e3e8ee',
+                  bgcolor: '#fafbfc',
+                  borderRight: '1px solid #eee',
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
-                  minHeight: '100vh',
-                  overflowY: 'auto',
+                  justifyContent: 'space-between',
+                  transition: 'width 0.2s',
+                  overflowX: 'hidden',
                 },
               }}
+              open
             >
-              {/* Logo and App Name */}
-              <Box display="flex" flexDirection="column" alignItems="center" width="100%" pt={7} pb={4} sx={{ minHeight: 120 }}>
-                <img src={logo} alt="Neuroblooming Logo" style={{ width: 38, height: 38, borderRadius: 10, marginBottom: 8, objectFit: 'cover', boxShadow: '0 2px 8px #b3c6e0' }} />
-                <Typography fontWeight={800} fontSize={20} color={themeColors.primary} letterSpacing={1} mb={1} style={{ fontFamily: 'Montserrat, sans-serif' }}>Neuroblooming</Typography>
-              </Box>
-              <Box width="80%" mx="auto" mb={2}><hr style={{ border: 'none', borderTop: '1.5px solid #e3e8ee' }} /></Box>
-              <List sx={{ width: '100%', px: 2 }}>
-                {sidebarMenu.map(menu => (
-                  <ListItem
-                    button
-                    key={menu.key}
-                    selected={activeSection === menu.key}
-                    onClick={() => setActiveSection(menu.key as any)}
-                    sx={{
-                      borderRadius: 999,
-                      mb: 1.5,
-                      px: 2.5,
-                      py: 1.2,
-                      bgcolor: activeSection === menu.key ? '#e3e8ee' : 'transparent',
-                      color: activeSection === menu.key ? themeColors.primary : '#6b7a90',
-                      fontWeight: 700,
-                      fontSize: 18,
-                      display: 'flex',
-                      alignItems: 'center',
-                      transition: 'background 0.2s, color 0.2s',
-                      '&:hover': {
-                        bgcolor: '#e3e8ee',
-                        color: themeColors.primary,
-                      },
-                    }}
-                  >
-                    {menu.icon && <Box mr={2} fontSize={24}>{menu.icon}</Box>}
-                    <ListItemText primary={menu.label} sx={{ fontWeight: 700, fontSize: 18 }} />
-                  </ListItem>
-                ))}
-              </List>
-              {/* Latest Screeners in Sidebar (for selected patient in progress) */}
-              {activeSection === 'progress' && progressScores && (
-                <Box mt={2} px={2}>
-                  <Typography variant="subtitle2" color="primary" fontWeight={700} mb={1} sx={{ fontSize: 14 }}>
-                    Latest Screeners
-                  </Typography>
-                  {(() => {
-                    const phq9 = getLatestScreener(progressScores, 'phq9');
-                    const asd = getLatestScreener(progressScores, 'asd');
-                    if (!phq9 && !asd) return <Typography color="text.secondary" sx={{ fontSize: 13 }}>No results yet</Typography>;
-                    return <>
-                      {phq9 && (
-                        <Box mb={0.5}>
-                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>PHQ-9: <span style={{ fontWeight: 400 }}>{phq9.screenerScore}</span></Typography>
-                          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{new Date(phq9.createdAt).toLocaleDateString()}</Typography>
-                        </Box>
-                      )}
-                      {asd && (
-                        <Box>
-                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>ASD: <span style={{ fontWeight: 400 }}>{asd.screenerScore}</span></Typography>
-                          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{new Date(asd.createdAt).toLocaleDateString()}</Typography>
-                        </Box>
-                      )}
-                    </>;
-                  })()}
-                </Box>
-              )}
-              <Box flex={1} /> {/* Pushes menu to top */}
-            </Drawer>
-          </Slide>
-          {/* Main Content */}
-          <Fade {...fadeProps}>
-            <Box flex={1} p={isMobile ? 2 : 6}>
-              {/* Profile and Logout at top right */}
-              <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar>{profile?.name?.[0]?.toUpperCase() || 'T'}</Avatar>
-                  <Typography fontWeight={600}>{profile?.name || 'Therapist'}</Typography>
-                  <Typography color="text.secondary">{profile?.email}</Typography>
-                  <Button variant="outlined" color="secondary" onClick={logout}>Logout</Button>
-                </Stack>
-              </Box>
-              {loading && <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh"><CircularProgress /></Box>}
-              {!loading && activeSection === 'dashboard' && (
-                <>
-                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-                    <Typography variant="h4" color={themeColors.primary} fontWeight={700}>Patient Management</Typography>
+              <Box>
+                <Box display="flex" alignItems="center" px={collapsed ? 1 : 3} py={3} justifyContent={collapsed ? 'center' : 'space-between'}>
+                  <Box display="flex" alignItems="center">
+                    <img src={logo} alt="Neuroblooming Logo" style={{ width: 36, height: 36, borderRadius: 8, marginRight: collapsed ? 0 : 8 }} />
+                    {!collapsed && (
+                      <Typography
+                        fontWeight={600}
+                        sx={{
+                          letterSpacing: 1,
+                          fontFamily: "'Raleway', 'Inter', sans-serif",
+                          color: "#2d2d4b",
+                          fontSize: { xs: 22, sm: 26, md: 30 },
+                          textShadow: "0 1px 4px rgba(45,45,75,0.06)",
+                        }}
+                      >
+                        Neuroblooming
+                      </Typography>
+                    )}
                   </Box>
-                  <Stack direction="row" spacing={3} flexWrap="wrap">
-                    {patients
-                      .filter(patient => patient.role !== 'therapist') // Exclude therapists from patient list
-                      .map(patient => {
-                        const initials = patient.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'P';
-                        return (
-                          <Paper key={patient.uid || patient._id} elevation={4} sx={{ p: 3, minWidth: 260, maxWidth: 320, mb: 2, borderRadius: 3, transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.04)', boxShadow: 8 }, cursor: 'pointer' }}
-                            onClick={() => setViewPatient(patient)}
-                          >
-                            <Box display="flex" alignItems="center" gap={2} mb={2}>
-                              <Avatar sx={{ bgcolor: themeColors.background, color: themeColors.primary, width: 48, height: 48, fontWeight: 700, fontSize: 22 }}>{initials}</Avatar>
-                              {editId === patient.uid ? (
-                                <Box>
-                                  <TextField size="small" value={editPatient.fullName} onChange={e => setEditPatient({ ...editPatient, fullName: e.target.value })} sx={{ mb: 1 }} />
-                                  <TextField size="small" value={editPatient.disorder} onChange={e => setEditPatient({ ...editPatient, disorder: e.target.value })} />
-                                </Box>
-                              ) : (
-                                <Box>
-                                  <Typography fontWeight={600} fontSize={18}>{patient.name}</Typography>
-                                  <Typography color={themeColors.primary}>{patient.disorder || 'N/A'}</Typography>
-                                </Box>
-                              )}
-                            </Box>
-                            <Box display="flex" gap={1}>
-                              {editId === patient.uid ? (
-                                <>
-                                  <IconButton color="success" onClick={() => handleEditPatient(patient.uid)}><SaveIcon /></IconButton>
-                                  <IconButton color="inherit" onClick={() => setEditId(null)}><CancelIcon /></IconButton>
-                                </>
-                              ) : (
-                                <>
-                                  <IconButton color="primary" onClick={e => { e.stopPropagation(); setEditId(patient.uid); setEditPatient({ fullName: patient.name, disorder: patient.disorder }); }}><EditIcon /></IconButton>
-                                  <IconButton color="error" onClick={e => { e.stopPropagation(); setDeleteId(patient.uid); }}><DeleteIcon /></IconButton>
-                                </>
-                              )}
-                            </Box>
-                          </Paper>
-                        );
-                      })}
-                  </Stack>
-                  {/* Patient Info & Progress Modal */}
-                  <Dialog open={!!viewPatient} onClose={() => setViewPatient(null)} maxWidth="md" fullWidth>
-                    <DialogTitle>Patient Profile & Progress</DialogTitle>
-                    <DialogContent dividers>
-                      {viewPatient && (
-                        <Box mb={3}>
-                          <Typography variant="h6" gutterBottom>Profile</Typography>
-                          <Stack spacing={1}>
-                            <Typography><b>Name:</b> {viewPatient.name}</Typography>
-                            {viewPatient.email && <Typography><b>Email:</b> {viewPatient.email}</Typography>}
-                            {viewPatient.age && <Typography><b>Age:</b> {viewPatient.age}</Typography>}
-                            {viewPatient.disorder && <Typography><b>Disorder:</b> {viewPatient.disorder}</Typography>}
-                            {viewPatient.mentalHealthConditions && viewPatient.mentalHealthConditions.length > 0 && (
-                              <Typography><b>Mental Health Conditions:</b> {viewPatient.mentalHealthConditions.join(', ')}</Typography>
-                            )}
-                            {viewPatient.experience && <Typography><b>Experience:</b> {viewPatient.experience}</Typography>}
-                            {viewPatient.goals && <Typography><b>Goals:</b> {viewPatient.goals}</Typography>}
-                          </Stack>
-                        </Box>
-                      )}
-                      {/* Screener Results */}
-                      <Typography variant="h6" gutterBottom>Screener Results</Typography>
-                      {(() => {
-                        const phq9 = getLatestScreener(viewProgress, 'phq9');
-                        const asd = getLatestScreener(viewProgress, 'asd');
-                        if (!phq9 && !asd) return <Typography color="text.secondary">No screener results available.</Typography>;
-                        return <>
-                          {phq9 && (
-                            <Box mb={1}>
-                              <Typography fontWeight={600}>PHQ-9 (Depression):</Typography>
-                              <Typography>Date: {new Date(phq9.createdAt).toLocaleDateString()} | Score: {phq9.screenerScore}</Typography>
-                              <Typography variant="body2" color="text.secondary">{phq9.screenerDetails}</Typography>
-                            </Box>
-                          )}
-                          {asd && (
-                            <Box mb={1}>
-                              <Typography fontWeight={600}>ASD (RAADS-R):</Typography>
-                              <Typography>Date: {new Date(asd.createdAt).toLocaleDateString()} | Score: {asd.screenerScore}</Typography>
-                              <Typography variant="body2" color="text.secondary">{asd.screenerDetails}</Typography>
-                            </Box>
-                          )}
-                        </>;
-                      })()}
-                      <Typography variant="h6" gutterBottom>Progress Report</Typography>
-                      {progressLoading ? (
-                        <Box display="flex" justifyContent="center" alignItems="center" minHeight={100}><CircularProgress /></Box>
-                      ) : viewProgress.length === 0 ? (
-                        <Typography color="text.secondary">No progress data available.</Typography>
-                      ) : (
-                        <Box>
-                          {/* Group scores by game */}
-                          {['pattern_heist', 'emoji_rush', 'logic_zone', 'taskflex'].map(gameKey => {
-                            const gameScores = viewProgress.filter(s => s.game === gameKey);
-                            if (gameScores.length === 0) return null;
-                            return (
-                              <Box key={gameKey} mb={2}>
-                                <Typography fontWeight={600} color={themeColors.primary} mb={1}>{gameKey.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</Typography>
-                                <Paper sx={{ p: 2, mb: 1 }}>
-                                  {gameScores.map((score, idx) => (
-                                    <Box key={idx} display="flex" justifyContent="space-between" mb={1}>
-                                      <Typography>Date: {new Date(score.createdAt).toLocaleDateString()}</Typography>
-                                      <Typography>Score: {score.score}</Typography>
-                                    </Box>
-                                  ))}
-                                </Paper>
-                              </Box>
-                            );
-                          })}
-                        </Box>
-                      )}
-                    </DialogContent>
-                    <DialogActions>
-                      <Button onClick={() => setViewPatient(null)} color="secondary">Close</Button>
-                    </DialogActions>
-                  </Dialog>
-                </>
-              )}
-              {!loading && activeSection === 'progress' && (
-                <Box maxWidth={480} mx="auto" bgcolor="#fff" borderRadius={3} boxShadow={3} p={4}>
-                  <Typography variant="h4" color={themeColors.primary} fontWeight={700} mb={3}>Progress Reports</Typography>
-                  <TextField
-                    select
-                    label="Select Patient"
-                    value={progressPatientId || ''}
-                    onChange={e => setProgressPatientId(e.target.value)}
-                    SelectProps={{ native: true }}
-                    fullWidth
-                    sx={{ mb: 3 }}
-                  >
-                    {patients.filter(p => p.role !== 'therapist').map(p => <option key={p.uid} value={p.uid}>{p.name}</option>)}
-                  </TextField>
-                  {/* Aggregate latest score per game for pie chart */}
-                  {(() => {
-                    if (!progressScores || !Array.isArray(progressScores)) return <Typography color="text.secondary">No progress data available.</Typography>;
-                    const gameKeys = [
-                      { key: 'pattern_heist', label: 'Pattern Heist' },
-                      { key: 'emoji_rush', label: 'Emoji Rush' },
-                      { key: 'logic_zone', label: 'Logic Zone' },
-                      { key: 'taskflex', label: 'Taskflex' },
-                    ];
-                    const gameScores = gameKeys.map(g => {
-                      // Find the latest score for this game
-                      const scores = progressScores.filter((s: any) => s.game === g.key);
-                      if (scores.length === 0) return { name: g.label, value: 0 };
-                      // Sort by createdAt descending
-                      scores.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                      return { name: g.label, value: scores[0].score || 0 };
-                    });
-                    const hasData = gameScores.some(g => g.value > 0);
-                    if (!hasData) return <Typography color="text.secondary">No progress data available.</Typography>;
-                    return (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={gameScores}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={90}
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {gameScores.map((entry, idx) => <Cell key={entry.name} fill={COLORS[idx % COLORS.length]} />)}
-                          </Pie>
-                          <Tooltip formatter={(value: any, name: any, props: any) => [`${value}`, name]} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    );
-                  })()}
+                  <IconButton onClick={() => setCollapsed(c => !c)} sx={{ ml: collapsed ? 0 : 1 }}>
+                    <HomeIcon />
+                  </IconButton>
                 </Box>
-              )}
-              {!loading && activeSection === 'history' && (
-                <HistoryByDate />
-              )}
+                <List>
+                  <ListItem button key="Patient List" onClick={() => navigate('/therapist/patients')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><PeopleIcon /></Box>
+                    {!collapsed && <ListItemText primary="Patient List" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="Progress Reports" onClick={() => navigate('/therapist/progress')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><BarChartIcon /></Box>
+                    {!collapsed && <ListItemText primary="Progress Reports" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="History by Date" onClick={() => navigate('/therapist/history')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><CalendarTodayIcon /></Box>
+                    {!collapsed && <ListItemText primary="History by Date" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="Weekly Goals" onClick={() => navigate('/therapist/weekly-goals')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><FlagIcon /></Box>
+                    {!collapsed && <ListItemText primary="Weekly Goals" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                  <ListItem button key="Screener Results" onClick={() => navigate('/therapist/screener-results')} sx={{ mb: 1, borderRadius: 2, pl: collapsed ? 1 : 2, pr: collapsed ? 1 : 2, justifyContent: collapsed ? 'center' : 'flex-start', minHeight: 48, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: 18, transition: '0.2s' }}>
+                    <Box mr={collapsed ? 0 : 2} display="flex" alignItems="center" justifyContent="center"><AssignmentIcon /></Box>
+                    {!collapsed && <ListItemText primary="Screener Results" primaryTypographyProps={{ fontWeight: 500, fontSize: 18, fontFamily: 'Inter, sans-serif' }} />}
+                  </ListItem>
+                </List>
+              </Box>
+              {/* Therapist Profile at Bottom */}
+              <Box px={collapsed ? 0 : 3} py={2} borderTop="1px solid #eee" display="flex" alignItems="center" justifyContent={collapsed ? 'center' : 'flex-start'}>
+                <Avatar sx={{ width: 72, height: 72, mb: 2, bgcolor: deepPurple[500] }}>
+                  {profile?.name ? profile.name[0].toUpperCase() : 'T'}
+                </Avatar>
+                {!collapsed && (
+                  <Box>
+                    <Typography fontWeight={600} fontSize={16} color="black">
+                      {profile?.name || 'Therapist'}
+                    </Typography>
+                    <Button size="small" color="secondary" onClick={logout} sx={{ textTransform: 'none', fontWeight: 500, p: 0, minWidth: 0 }}>
+                      Logout
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            </Drawer>
+            {/* Main Content */}
+            <Box
+              flex={1}
+              sx={{
+                transition: 'margin-left 0.2s',
+                ml: collapsed ? '64px' : '260px',
+                maxWidth: '1200px',
+                mx: 'auto',
+                p: isMobile ? 2 : 4,
+              }}
+            >
+              <Grid container spacing={4}>
+                {/* Therapist Info Card */}
+                <Grid item xs={12} md={4}>
+                  <Paper elevation={4} sx={{ p: 4, borderRadius: 4, mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: '#f7fbff' }}>
+                    <Avatar sx={{ width: 72, height: 72, mb: 2, bgcolor: deepPurple[500] }}>
+                      {profile?.name ? profile.name[0].toUpperCase() : 'T'}
+                    </Avatar>
+                    <Typography variant="h6" fontWeight={500} mb={0.5}>{profile?.name || 'Therapist'}</Typography>
+                    <Typography variant="body2" color="text.secondary">{profile?.email}</Typography>
+                  </Paper>
+                </Grid>
+                {/* Patient List Card - only show if activeSection is 'dashboard' */}
+                {activeSection === 'dashboard' && (
+                  <Grid item xs={12} md={8}>
+                    <Paper elevation={4} sx={{ p: 3, borderRadius: 4, mb: 2, bgcolor: '#fff' }}>
+                      <Typography variant="h6" fontWeight={500} mb={2}>Patient List</Typography>
+                      {loading ? (
+                        <Box display="flex" justifyContent="center" alignItems="center" minHeight={120}>
+                          <CircularProgress />
+                        </Box>
+                      ) : patients.filter(p => p.uid !== profile?.uid && p.email !== profile?.email).length === 0 ? (
+                        <Typography color="text.secondary" textAlign="center">No patients found.</Typography>
+                      ) : (
+                        <Grid container spacing={2} direction="column">
+                          {patients.filter(p => p.uid !== profile?.uid && p.email !== profile?.email).map((patient) => (
+                            <Grid item xs={12} key={patient.uid || patient._id}>
+                              <Paper elevation={2} sx={{ p: 3, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 3, minHeight: 90, minWidth: 320, maxWidth: 400, width: '100%' }}>
+                                <Avatar sx={{ bgcolor: deepPurple[400], width: 56, height: 56, fontSize: 28, fontFamily: 'Inter, sans-serif' }}>
+                                  {patient.name ? patient.name[0].toUpperCase() : (patient.fullName ? patient.fullName[0].toUpperCase() : 'U')}
+                                </Avatar>
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                  <Typography fontWeight={500} fontSize={18} fontFamily="'Inter', sans-serif">{patient.name || patient.fullName || 'Unnamed'}</Typography>
+                                  <Typography color="text.secondary" fontSize={16} fontFamily="'Inter', sans-serif" sx={{ mt: 0.5, width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{patient.email}</Typography>
+                                </Box>
+                              </Paper>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      )}
+                    </Paper>
+                  </Grid>
+                )}
+                {/* Progress Reports - only show if activeSection is 'progress' */}
+                {activeSection === 'progress' && (
+                  <Grid item xs={12} md={8}>
+                    <UserProgress />
+                  </Grid>
+                )}
+                {/* History by Date - only show if activeSection is 'history' */}
+                {activeSection === 'history' && (
+                  <Grid item xs={12} md={8}>
+                    <HistoryByDate />
+                  </Grid>
+                )}
+              </Grid>
             </Box>
-          </Fade>
-          {/* Add Patient Dialog */}
-          <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)}>
-            <DialogTitle>Add Patient</DialogTitle>
-            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 320 }}>
-              <TextField label="Full Name" value={newPatient.fullName} onChange={e => setNewPatient({ ...newPatient, fullName: e.target.value })} fullWidth required />
-              <TextField label="Disorder Name" value={newPatient.disorder} onChange={e => setNewPatient({ ...newPatient, disorder: e.target.value })} fullWidth required />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddPatient} variant="contained" disabled={loading}>Add</Button>
-            </DialogActions>
-          </Dialog>
-          {/* Delete Confirmation Dialog */}
-          <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
-            <DialogTitle>Delete Patient</DialogTitle>
-            <DialogContent>Are you sure you want to delete this patient?</DialogContent>
-            <DialogActions>
-              <Button onClick={() => setDeleteId(null)}>Cancel</Button>
-              <Button color="error" onClick={() => deleteId && handleDeletePatient(deleteId)} disabled={loading}>Delete</Button>
-            </DialogActions>
-          </Dialog>
+          </Box>
         </Box>
       </Box>
-    </>
+    </PageWrapper>
   );
 };
 

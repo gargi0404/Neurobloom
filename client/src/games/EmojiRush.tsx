@@ -3,25 +3,32 @@ import { Box, Button, Typography, Paper, Grid, LinearProgress } from '@mui/mater
 import { useAuth } from '../contexts/AuthContext';
 import { getAuth } from 'firebase/auth';
 import axios from 'axios';
+import angryImg from '../angry.jpeg';
+import tiredImg from '../tired.jpeg';
+import sadImg from '../sad.jpeg';
+import happyImg from '../happy.jpeg';
+import excitedImg from '../excited.jpeg';
+import surprisedImg from '../surprised.jpeg';
+import determinedImg from '../determined.jpeg';
+import neutralImg from '../neutral.jpeg';
+import pleadingImg from '../pleading.jpeg';
+import cryingImg from '../crying.jpeg';
+import disgustedImg from '../disgusted.jpeg';
 
-const EMOJIS = [
-  { emoji: '😀', label: 'Happy', description: 'Feeling joyful and content' },
-  { emoji: '😢', label: 'Sad', description: 'Feeling down or disappointed' },
-  { emoji: '😡', label: 'Angry', description: 'Feeling mad or frustrated' },
-  { emoji: '😮', label: 'Surprised', description: 'Feeling shocked or amazed' },
-  { emoji: '😱', label: 'Scared', description: 'Feeling afraid or frightened' },
-  { emoji: '😐', label: 'Neutral', description: 'Feeling calm or indifferent' },
-  { emoji: '😂', label: 'Laughing', description: 'Finding something very funny' },
-  { emoji: '😭', label: 'Crying', description: 'Feeling very sad or hurt' },
-  { emoji: '😊', label: 'Pleased', description: 'Feeling satisfied and happy' },
-  { emoji: '😤', label: 'Determined', description: 'Feeling strong and focused' },
-  { emoji: '🤔', label: 'Confused', description: 'Feeling uncertain or puzzled' },
-  { emoji: '😴', label: 'Tired', description: 'Feeling sleepy or exhausted' },
-  { emoji: '🤗', label: 'Hugging', description: 'Feeling warm and caring' },
-  { emoji: '😎', label: 'Cool', description: 'Feeling confident and relaxed' },
-  { emoji: '🥺', label: 'Pleading', description: 'Feeling hopeful or begging' },
-  { emoji: '🤩', label: 'Excited', description: 'Feeling thrilled and enthusiastic' },
+const FACES = [
+  { img: angryImg, label: 'angry', description: 'Angry expression' },
+  { img: tiredImg, label: 'tired', description: 'Tired expression' },
+  { img: sadImg, label: 'sad', description: 'Sad expression' },
+  { img: happyImg, label: 'happy', description: 'Happy expression' },
+  { img: excitedImg, label: 'excited', description: 'Excited expression' },
+  { img: surprisedImg, label: 'surprised', description: 'Surprised expression' },
+  { img: determinedImg, label: 'determined', description: 'Determined expression' },
+  { img: neutralImg, label: 'neutral', description: 'Neutral expression' },
+  { img: pleadingImg, label: 'pleading', description: 'Pleading expression' },
+  { img: cryingImg, label: 'crying', description: 'Crying expression' },
+  { img: disgustedImg, label: 'disgusted', description: 'Disgusted expression' },
 ];
+const EMOTION_LABELS = FACES.map(f => f.label);
 const DIFFICULTY = 4; // Number of options per round
 const ROUNDS = 15;
 const TIME_PER_ROUND = 8000; // ms - longer time for ASD support
@@ -57,7 +64,7 @@ const EmojiRush: React.FC = () => {
   const { user } = useAuth();
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [current, setCurrent] = useState<{ emoji: string; label: string; description: string } | null>(null);
+  const [current, setCurrent] = useState<{ img: string; label: string; description: string } | null>(null);
   const [options, setOptions] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
@@ -70,12 +77,12 @@ const EmojiRush: React.FC = () => {
 
   // Start new round
   const startRound = () => {
-    const emojiObj = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    const faceObj = FACES[Math.floor(Math.random() * FACES.length)];
     const labels = shuffle([
-      emojiObj.label,
-      ...shuffle(EMOJIS.filter(e => e.label !== emojiObj.label)).slice(0, DIFFICULTY - 1).map(e => e.label),
+      faceObj.label,
+      ...shuffle(FACES.filter(f => f.label !== faceObj.label)).slice(0, DIFFICULTY - 1).map(f => f.label),
     ]);
-    setCurrent(emojiObj);
+    setCurrent(faceObj);
     setOptions(labels);
     setSelected(null);
     setFeedback(null);
@@ -163,7 +170,7 @@ const EmojiRush: React.FC = () => {
 
   return (
     <Box p={2}>
-      <Typography variant="h5" mb={2}>Emoji Rush</Typography>
+      <Typography variant="h5" mb={2}>Emotion Rush</Typography>
       <Typography variant="body2" color="text.secondary" mb={2}>
         Helps with: Autism Spectrum Disorder (ASD) | Trains: Emotion Recognition, Social Interpretation
       </Typography>
@@ -186,10 +193,10 @@ const EmojiRush: React.FC = () => {
         </Box>
       ) : (
         <Box>
-          <Typography mb={1}>Match the emoji to the correct emotion before time runs out!</Typography>
+          <Typography mb={1}>Match the emotion to the correct face before time runs out!</Typography>
           <Box display="flex" justifyContent="center" alignItems="center" mb={2}>
-            <Paper elevation={3} sx={{ fontSize: 80, p: 3, minWidth: 120, textAlign: 'center', bgcolor: 'grey.50' }}>
-              {current?.emoji}
+            <Paper elevation={3} sx={{ p: 2, minWidth: 220, minHeight: 220, textAlign: 'center', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {current && <img src={current.img} alt={current.label} style={{ maxHeight: 200, maxWidth: 200, borderRadius: 12 }} />}
             </Paper>
           </Box>
           
@@ -208,26 +215,18 @@ const EmojiRush: React.FC = () => {
             color={timer < 2000 ? 'error' : timer < 4000 ? 'warning' : 'primary'}
           />
           
-          <Grid container spacing={2} justifyContent="center">
-            {options.map(label => (
-              <Grid item key={label} xs={6} sm={3}>
+          <Grid container spacing={2} justifyContent="center" mb={2}>
+            {options.map(option => (
+              <Grid item key={option} xs={6} sm={3}>
                 <Button
-                  variant={selected === label ? (feedback === 'correct' && label === current?.label ? 'contained' : 'outlined') : 'outlined'}
-                  color={selected === label ? (feedback === 'correct' && label === current?.label ? 'success' : 'error') : 'primary'}
-                  onClick={() => handleSelect(label)}
+                  variant={selected ? (option === current?.label ? (feedback === 'correct' ? 'contained' : 'outlined') : 'outlined') : 'outlined'}
+                  color={selected ? (option === current?.label && feedback === 'correct' ? 'success' : option === selected ? 'error' : 'primary') : 'primary'}
+                  onClick={() => handleSelect(option)}
                   fullWidth
-                  sx={{ 
-                    fontSize: 16, 
-                    mb: 1, 
-                    py: 1.5,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      transform: 'scale(1.02)',
-                    }
-                  }}
+                  sx={{ fontWeight: 600, textTransform: 'capitalize', borderRadius: 2, py: 1.5 }}
                   disabled={!!selected}
                 >
-                  {label}
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
                 </Button>
               </Grid>
             ))}

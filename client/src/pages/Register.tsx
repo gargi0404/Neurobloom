@@ -26,6 +26,8 @@ import {
 import { Visibility, VisibilityOff, Psychology, School, Person } from '@mui/icons-material';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import axios from 'axios';
+import '@fontsource/inter';
+import logo from '../logo.jpg';
 
 const MENTAL_HEALTH_CONDITIONS = [
   { id: 'adhd', label: 'ADHD', description: 'Attention Deficit Hyperactivity Disorder' },
@@ -442,73 +444,80 @@ const Register: React.FC = () => {
   }, [profile, navigate]);
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f5f5f5">
-      <Paper elevation={3} sx={{ p: 4, minWidth: 400, maxWidth: 600, width: '90%' }}>
-        <Box textAlign="center" mb={3}>
-          <Typography variant="h4" color="primary" gutterBottom>
-            🌸 NeuroBloom
-          </Typography>
-          <Typography variant="h6" color="text.secondary">
-            Join Your Mental Health Journey
-          </Typography>
-        </Box>
-
-        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-
-        <form onSubmit={handleSubmit}>
-          {renderStepContent()}
-
-          <Box display="flex" justifyContent="space-between" mt={4}>
-            <Button
-              disabled={activeStep === 0}
-              onClick={handleBack}
-              variant="outlined"
-            >
-              Back
-            </Button>
-            
-            {activeStep === steps.length - 1 ? (
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={loading}
-                sx={{ minWidth: 120 }}
-              >
-                {loading ? 'Creating Account...' : 'Create Account'}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ minWidth: 120 }}
-              >
-                Next
-              </Button>
-            )}
+    <Box sx={{ minHeight: '100vh', bgcolor: '#fff', position: 'relative', overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}>
+      {/* Abstract colorful shapes */}
+      <Box sx={{ position: 'absolute', top: '-120px', right: '-180px', zIndex: 0 }}>
+        <svg width="500" height="350" viewBox="0 0 500 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="350" cy="120" rx="200" ry="120" fill="url(#paint0_linear)" fillOpacity="0.7" />
+          <defs>
+            <linearGradient id="paint0_linear" x1="150" y1="0" x2="500" y2="350" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#ff7eb3" />
+              <stop offset="1" stopColor="#65e4ff" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </Box>
+      <Box sx={{ position: 'absolute', bottom: '-80px', right: '-60px', zIndex: 0 }}>
+        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="100" fill="#ffe066" fillOpacity="0.5" />
+        </svg>
+      </Box>
+      {/* Centered Register Form (floating, no card) */}
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, position: 'relative' }}>
+        <Box sx={{ width: '100%', maxWidth: 480, mx: 'auto', p: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', boxShadow: 'none', borderRadius: 0 }}>
+          {/* Logo Placeholder */}
+          <Box sx={{ mb: 2 }}>
+            <Box component="img" src={logo} alt="NeuroBloom Logo" sx={{ width: 60, height: 60, borderRadius: 2, boxShadow: 2 }} />
           </Box>
-        </form>
-
-        <Divider sx={{ my: 3 }} />
-        
-        <Box textAlign="center">
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="h3" fontWeight={600} color="#2d2d4b" mb={0.5} sx={{ fontFamily: 'Inter, sans-serif', textAlign: 'center', letterSpacing: 1, fontSize: { xs: 32, md: 38 } }}>
+            Create Account
+          </Typography>
+          <Box sx={{ width: 60, height: 5, bgcolor: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)', borderRadius: 2, mb: 2, background: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)' }} />
+          <Typography variant="body1" color="text.secondary" mb={1} sx={{ textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
+            Join NeuroBlooming and start your journey!
+          </Typography>
+          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+            {renderStepContent()}
+            <Box display="flex" justifyContent="space-between" mt={4}>
+              {activeStep > 0 && (
+                <Button
+                  onClick={handleBack}
+                  variant="outlined"
+                  sx={{ borderRadius: 3, fontFamily: 'Inter, sans-serif' }}
+                >
+                  Back
+                </Button>
+              )}
+              {activeStep === steps.length - 1 ? (
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading}
+                  sx={{ minWidth: 140, fontWeight: 700, fontSize: 18, borderRadius: 3, fontFamily: 'Inter, sans-serif', background: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)', color: '#fff', boxShadow: 2, textTransform: 'none', '&:hover': { background: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)', opacity: 0.95 } }}
+                >
+                  {loading ? 'Creating Account...' : 'Create Account'}
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={handleNext}
+                  sx={{ minWidth: 140, fontWeight: 700, fontSize: 18, borderRadius: 3, fontFamily: 'Inter, sans-serif', background: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)', color: '#fff', boxShadow: 2, textTransform: 'none', '&:hover': { background: 'linear-gradient(90deg, #ff7eb3 0%, #65e4ff 100%)', opacity: 0.95 } }}
+                >
+                  Next
+                </Button>
+              )}
+            </Box>
+          </form>
+          <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: '#7b7b9d', fontFamily: 'Inter, sans-serif' }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: 'inherit', textDecoration: 'underline' }}>
-              Sign in here
+            <Link to="/" style={{ color: '#65e4ff', fontWeight: 700, textDecoration: 'underline' }}>
+              Sign in
             </Link>
           </Typography>
         </Box>
-      </Paper>
+      </Box>
     </Box>
   );
 };

@@ -17,6 +17,14 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import ScreenerPage from './pages/ScreenerPage';
 import HistoryByDate from './pages/HistoryByDate';
+import About from './pages/About';
+import ScreenerResults from './pages/ScreenerResults';
+import TherapistProgress from './pages/TherapistProgress';
+import TherapistHistory from './pages/TherapistHistory';
+import WeeklyGoals from './pages/WeeklyGoals';
+import TherapistWeeklyGoals from './pages/TherapistWeeklyGoals';
+import TherapistScreenerResults from './pages/TherapistScreenerResults';
+import TherapistPatientList from './pages/TherapistPatientList';
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
   const { user, loading, needsProfile } = useAuth();
@@ -56,6 +64,9 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/games" element={<PrivateRoute><GamesInfo /></PrivateRoute>} />
           <Route path="/therapist" element={<TherapistRoute><TherapistDashboard /></TherapistRoute>} />
+          <Route path="/therapist/patients" element={<TherapistRoute><TherapistPatientList /></TherapistRoute>} />
+          <Route path="/therapist/progress" element={<TherapistRoute><TherapistProgress /></TherapistRoute>} />
+          <Route path="/therapist/history" element={<TherapistRoute><TherapistHistory /></TherapistRoute>} />
           <Route path="/therapist/user/:uid" element={<TherapistRoute><UserProgress /></TherapistRoute>} />
           <Route path="/progress" element={<PrivateRoute><UserProgress /></PrivateRoute>} />
           <Route path="/game/emoji" element={<PrivateRoute><EmojiRush /></PrivateRoute>} />
@@ -65,6 +76,11 @@ const App: React.FC = () => {
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/screener" element={<PrivateRoute><ScreenerPage /></PrivateRoute>} />
           <Route path="/history-by-date" element={<PrivateRoute><HistoryByDate /></PrivateRoute>} />
+          <Route path="/about" element={<About />} />
+          <Route path="/screeners/results" element={<PrivateRoute><ScreenerResults /></PrivateRoute>} />
+          <Route path="/weekly-goals" element={<PrivateRoute><WeeklyGoals /></PrivateRoute>} />
+          <Route path="/therapist/weekly-goals" element={<TherapistRoute><TherapistWeeklyGoals /></TherapistRoute>} />
+          <Route path="/therapist/screener-results" element={<TherapistRoute><TherapistScreenerResults /></TherapistRoute>} />
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Routes>
       </BrowserRouter>
