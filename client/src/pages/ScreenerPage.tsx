@@ -47,7 +47,7 @@ const ScreenerPage: React.FC = () => {
   };
 
   return (
-    <PageWrapper variant="other">
+    <PageWrapper variant="userHome">
       <Box px={{ xs: 1, sm: 4, md: 8 }} py={4} width="100%">
         {step === 'warning' && (
           <Stack spacing={3} alignItems="center">

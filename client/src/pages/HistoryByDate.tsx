@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, MenuItem, Select, FormControl, InputLabel, Paper, TextField, List, ListItem, ListItemText } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import Header from '../components/Header';
+import { PageWrapper } from '../components/PageWrapper';
 
 const HistoryByDate: React.FC = () => {
   const { user, profile } = useAuth();
@@ -52,53 +54,56 @@ const HistoryByDate: React.FC = () => {
   });
 
   return (
-    <Box maxWidth={700} mx="auto" p={4}>
-      <Typography variant="h4" fontWeight={700} color="primary" mb={3}>History by Date</Typography>
-      <Box display="flex" gap={2} mb={3}>
-        <TextField
-          label="Select Date"
-          type="date"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-        {isTherapist && (
-          <FormControl sx={{ minWidth: 180 }}>
-            <InputLabel id="patient-select-label">Patient</InputLabel>
-            <Select
-              labelId="patient-select-label"
-              value={selectedPatient}
-              label="Patient"
-              onChange={e => setSelectedPatient(e.target.value)}
-            >
-              {patients.map((p: any) => (
-                <MenuItem key={p.uid} value={p.uid}>{p.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+    <PageWrapper variant="progress">
+      <Header />
+      <Box maxWidth={700} mx="auto" p={4} sx={{ pt: 10 }}>
+        <Typography variant="h4" fontWeight={700} color="primary" mb={3}>History by Date</Typography>
+        <Box display="flex" gap={2} mb={3}>
+          <TextField
+            label="Select Date"
+            type="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          {isTherapist && (
+            <FormControl sx={{ minWidth: 180 }}>
+              <InputLabel id="patient-select-label">Patient</InputLabel>
+              <Select
+                labelId="patient-select-label"
+                value={selectedPatient}
+                label="Patient"
+                onChange={e => setSelectedPatient(e.target.value)}
+              >
+                {patients.map((p: any) => (
+                  <MenuItem key={p.uid} value={p.uid}>{p.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+        {loading ? (
+          <Typography>Loading...</Typography>
+        ) : (
+          <Paper sx={{ p: 3, borderRadius: 3 }}>
+            {filteredScores.length === 0 ? (
+              <Typography color="text.secondary">No games or screeners found for this date.</Typography>
+            ) : (
+              <List>
+                {filteredScores.map((s, idx) => (
+                  <ListItem key={idx} divider>
+                    <ListItemText
+                      primary={s.game ? `${s.game.replace('_', ' ').toUpperCase()} (Game)` : `${s.screenerType?.toUpperCase()} (Screener)`}
+                      secondary={`Score: ${s.score ?? s.screenerScore} | ${new Date(s.createdAt).toLocaleTimeString()}${s.screenerDetails ? ' | ' + s.screenerDetails : ''}`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </Paper>
         )}
       </Box>
-      {loading ? (
-        <Typography>Loading...</Typography>
-      ) : (
-        <Paper sx={{ p: 3, borderRadius: 3 }}>
-          {filteredScores.length === 0 ? (
-            <Typography color="text.secondary">No games or screeners found for this date.</Typography>
-          ) : (
-            <List>
-              {filteredScores.map((s, idx) => (
-                <ListItem key={idx} divider>
-                  <ListItemText
-                    primary={s.game ? `${s.game.replace('_', ' ').toUpperCase()} (Game)` : `${s.screenerType?.toUpperCase()} (Screener)`}
-                    secondary={`Score: ${s.score ?? s.screenerScore} | ${new Date(s.createdAt).toLocaleTimeString()}${s.screenerDetails ? ' | ' + s.screenerDetails : ''}`}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </Paper>
-      )}
-    </Box>
+    </PageWrapper>
   );
 };
 

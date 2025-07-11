@@ -138,7 +138,7 @@ const ADHDScreener: React.FC<ADHDScreenerProps> = ({ onComplete }) => {
 
   // Fallback: original UI for standalone use
   return (
-    <PageWrapper variant="other">
+    <PageWrapper variant="userHome">
       <Box
         sx={{
           minHeight: "100vh",

@@ -81,7 +81,7 @@ const WeeklyGoals: React.FC<WeeklyGoalsProps> = ({ checked: externalChecked, rea
 
   if (horizontal) {
     return (
-      <PageWrapper variant="other">
+      <PageWrapper variant="userHome">
         <Paper elevation={6} sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'stretch', p: { xs: 2, md: 4 }, borderRadius: 5, maxWidth: 1200, mx: 'auto', width: '100%', minHeight: 400, boxShadow: 6, bgcolor: '#fff' }}>
           <Box flex={1} display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={2} borderRight={{ md: '1px solid #f0f0f0' }}>
             <Avatar sx={{ bgcolor: '#ffe066', width: 72, height: 72, mb: 2 }}>
@@ -126,7 +126,7 @@ const WeeklyGoals: React.FC<WeeklyGoalsProps> = ({ checked: externalChecked, rea
   }
 
   return (
-    <PageWrapper variant="other">
+    <PageWrapper variant="userHome">
       <Grid container justifyContent="center">
         <Grid item xs={12} md={8} lg={6}>
           <Paper elevation={6} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 5, bgcolor: '#ffffffcc', boxShadow: 6 }}>

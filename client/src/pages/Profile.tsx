@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, Avatar, Button, TextField, CircularProgress, Alert, Grid, Divider } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,28 @@ const Profile: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [editDisorder, setEditDisorder] = useState((profile as any)?.disorder || '');
   const [editTherapistName, setEditTherapistName] = useState((profile as any)?.therapistName || '');
+  const [scores, setScores] = useState<any[]>([]);
+  const [scoresLoading, setScoresLoading] = useState(true);
+
+  // Fetch user scores for progress calculation
+  useEffect(() => {
+    const fetchScores = async () => {
+      if (!user) return;
+      setScoresLoading(true);
+      try {
+        const token = await user.getIdToken();
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/score/my`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setScores(res.data);
+      } catch (err) {
+        console.error('Failed to fetch scores:', err);
+        setScores([]);
+      }
+      setScoresLoading(false);
+    };
+    fetchScores();
+  }, [user]);
 
   const handleEdit = () => {
     setEditName(profile?.name || '');
@@ -59,16 +81,23 @@ const Profile: React.FC = () => {
     setSuccess('');
   };
 
-  // Calculate overall progress (sum of all scores if available)
-  // If you have scores in profile or context, use them; otherwise, show '-'
-  const overallProgress = (profile as any)?.overallProgress || '-';
+  // Calculate overall progress metrics
+  const gameScores = scores.filter(s => s.game);
+  const screenerScores = scores.filter(s => s.screenerType);
+  const totalGamesPlayed = gameScores.length;
+  const totalScreenersTaken = screenerScores.length;
+  const averageGameScore = totalGamesPlayed > 0 
+    ? Math.round(gameScores.reduce((sum, s) => sum + (s.score || 0), 0) / totalGamesPlayed)
+    : 0;
+  const totalScore = gameScores.reduce((sum, s) => sum + (s.score || 0), 0);
+
   const disorder = (profile as any)?.disorder || '-';
   const therapistName = (profile as any)?.therapistName || '-';
 
   if (loading || !profile) return <Box p={4}><CircularProgress /></Box>;
 
   return (
-    <PageWrapper variant="other">
+    <PageWrapper variant="userHome">
       <Header />
       <Box p={4} sx={{ pt: 10 }}>
         <Button variant="outlined" sx={{ mb: 2 }} onClick={() => navigate('/dashboard')}>
@@ -154,7 +183,24 @@ const Profile: React.FC = () => {
                     )}
                     <Divider sx={{ my: 1 }} />
                     <Typography variant="subtitle2" color="text.secondary" mb={0.5} fontWeight={500}>Overall Progress</Typography>
-                    <Typography mb={2} fontSize={18}>{overallProgress}</Typography>
+                    {scoresLoading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <Box>
+                        <Typography mb={1} fontSize={16}>
+                          <strong>Games Played:</strong> {totalGamesPlayed}
+                        </Typography>
+                        <Typography mb={1} fontSize={16}>
+                          <strong>Screeners Taken:</strong> {totalScreenersTaken}
+                        </Typography>
+                        <Typography mb={1} fontSize={16}>
+                          <strong>Average Game Score:</strong> {averageGameScore}
+                        </Typography>
+                        <Typography mb={1} fontSize={16}>
+                          <strong>Total Score:</strong> {totalScore}
+                        </Typography>
+                      </Box>
+                    )}
                     <Divider sx={{ my: 1 }} />
                     <Typography variant="subtitle2" color="text.secondary" mb={0.5} fontWeight={500}>Joined</Typography>
                     <Typography mb={2} fontSize={18}>{user?.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : '-'}</Typography>
