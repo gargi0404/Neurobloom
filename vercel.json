@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://neuroblooming-1999-gi1z.onrender.com/api/$1"
+    }
+  ]
+} 
